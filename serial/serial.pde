@@ -27,6 +27,8 @@ AudioOutput out;
 
 ChikInstrument chik;// = new ChikInstrument( out );
 
+Queue history;
+
 void setup()               // executed once at the begining LatticeImage
 {
   //
@@ -39,6 +41,8 @@ void setup()               // executed once at the begining LatticeImage
   size(1000, 1000, P3D);            // window size
   textSize(50);
   textAlign(CENTER, CENTER);
+  
+  history = new ArrayDeque(width);
   
   // init minim
   // initialize the minim and out objects
@@ -71,6 +75,15 @@ void draw()
 
         valC_F = float(listVal[0]);
         valM_F = float(listVal[1]);
+        
+        if (history.size() < width) {
+         history.add(valC_F); 
+        }
+        else {
+         history.remove(); 
+         history.add(valC_F); 
+        }
+        
         //println(valC_F);
 
         //valC_FM = map(valC_F, 0, 30000, 0, 1000);
@@ -106,6 +119,16 @@ void draw()
   
   
   text("Microphone = " + str(valM_F), 500,600, 10);
+  
+  stroke(255);
+  int n = 0;
+  float last = 0;
+  for (Object o : history) {
+    float value = (Float)o * 0.25;
+    line(n, last, 0, n+1, value, 0);
+    last = value;
+    n++;
+  }
 
 }  // end of draw
 

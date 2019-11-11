@@ -6,9 +6,10 @@ class CapacityFilter
   boolean triggered = false;
   boolean sendTrigger = false;
   boolean sendRelease = false;
+  int noTrig = 0;
   float peak = 0.0;
   float lastVal = 0.0;
-  float thres = 0.1;
+  float thres = 0.15;
   int maxn = 30;
   float ave = 1000.0;
   float variance = 0.0;
@@ -21,13 +22,15 @@ class CapacityFilter
    // 
  
    void update(float val) {
+     if (noTrig > 0) noTrig--;
+     
      if (!triggered) {
       if (!sendTrigger) {
-        if (val < 10) {
+        if (val < 10 && noTrig <= 0) {
          sendTrigger = true; 
          peak = ave - val;
         }
-        if (lastVal - val > ave * thres) {
+        if (lastVal - val > max(ave * thres, 100) && noTrig <= 0) {
          sendTrigger = true; // need to send trigger, but value is still decreasing, wait till value stops decreasing
         }
         
@@ -61,7 +64,7 @@ class CapacityFilter
      }
      
      if (triggered) {
-       if (val > ave * 0.8 || val > 2000) {
+       if (val > ave * 0.8 || val > 1500) {
         sendRelease = true; 
        }
        
@@ -101,6 +104,7 @@ class CapacityFilter
           peak = -1; // clear peak
           sendTrigger = false;
           triggered = true;
+          noTrig = 3;
           return returnVal;
        }
        else {
