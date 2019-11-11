@@ -22,6 +22,11 @@ float mapClamp(float value, float x1, float x2, float y1, float y2) {
   return map(value, x1, x2, y1, y2);
 }
 
+Minim minim;
+AudioOutput out;
+
+ChikInstrument chik;// = new ChikInstrument( out );
+
 void setup()               // executed once at the begining LatticeImage
 {
   //
@@ -34,6 +39,12 @@ void setup()               // executed once at the begining LatticeImage
   size(1000, 1000, P3D);            // window size
   textSize(50);
   textAlign(CENTER, CENTER);
+  
+  // init minim
+  // initialize the minim and out objects
+  minim = new Minim( this );
+  out = minim.getLineOut( Minim.MONO, 2048 );
+  chik = new ChikInstrument( out );
 
 } // end of setup
 
@@ -71,6 +82,8 @@ void draw()
         if (peak > 0) {
           triggered = true;
           lastPeak = peak;
+          //out.playNote( 0.f, 0.05f, chik );
+          out.playNote( 0.f, 1.0f, new WaveShaperInstrument( Frequency.ofPitch("C2").asHz(), 10.0, out ) ); 
         }
         if (cf.getRelease() > 0) triggered = false;
         if (triggered) variance = cf.getVariance();
