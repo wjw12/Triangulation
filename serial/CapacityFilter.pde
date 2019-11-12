@@ -6,10 +6,9 @@ class CapacityFilter
   boolean triggered = false;
   boolean sendTrigger = false;
   boolean sendRelease = false;
-  int noTrig = 0;
   float peak = 0.0;
   float lastVal = 0.0;
-  float thres = 0.15;
+  float thres = 0.1;
   int maxn = 30;
   float ave = 1000.0;
   float variance = 0.0;
@@ -22,34 +21,34 @@ class CapacityFilter
    // 
  
    void update(float val) {
-     if (noTrig > 0) noTrig--;
-     
      if (!triggered) {
       if (!sendTrigger) {
-        if (val < 10 && noTrig <= 0) {
+        if (val < 10) {
          sendTrigger = true; 
          peak = ave - val;
         }
-        if (lastVal - val > max(ave * thres, 100) && noTrig <= 0) {
+        if (lastVal - val > max(ave * thres, 35)) {
+         peak = ave - val;
          sendTrigger = true; // need to send trigger, but value is still decreasing, wait till value stops decreasing
         }
         
-        if (sendTrigger) {
-          recent.clear();
-        }
-        else {
-          // process average background
-           int size = recent.size();
-           if (size > maxn) {
-             float oldVal = (Float)recent.remove(); 
-             ave -= oldVal / maxn;
-             ave += val / maxn;
-           }
-           else {
-            recent.add(val);
-            ave = (ave * size + val) / (size + 1);
-           }
-        }
+          if (sendTrigger) {
+            recent.clear();
+          }
+          else {
+            // process average background
+             int size = recent.size();
+             if (size > maxn) {
+               float oldVal = (Float)recent.remove(); 
+               ave -= oldVal / maxn;
+               ave += val / maxn;
+             }
+             else {
+              recent.add(val);
+              ave = (ave * size + val) / (size + 1);
+             }
+          }
+        
       }
       else { // sendTrigger == true, need to determine peak value
         if (val < 10) {
@@ -64,7 +63,7 @@ class CapacityFilter
      }
      
      if (triggered) {
-       if (val > ave * 0.8 || val > 1500) {
+       if (val > ave * 0.8 || val > 2500) {
         sendRelease = true; 
        }
        
@@ -104,7 +103,6 @@ class CapacityFilter
           peak = -1; // clear peak
           sendTrigger = false;
           triggered = true;
-          noTrig = 3;
           return returnVal;
        }
        else {

@@ -1,6 +1,7 @@
 //serial
 import processing.serial.*;
 
+
 Serial serial;  // Create object from Serial class
 String val;     // Data received from the serial port
 
@@ -25,9 +26,10 @@ float mapClamp(float value, float x1, float x2, float y1, float y2) {
 Minim minim;
 AudioOutput out;
 
-ChikInstrument chik;// = new ChikInstrument( out );
+//ChikInstrument chik;// = new ChikInstrument( out );
 
 Queue history;
+Queue history2;
 
 void setup()               // executed once at the begining LatticeImage
 {
@@ -43,12 +45,17 @@ void setup()               // executed once at the begining LatticeImage
   textAlign(CENTER, CENTER);
   
   history = new ArrayDeque(width);
+  history2 = new ArrayDeque(width);
   
   // init minim
   // initialize the minim and out objects
   minim = new Minim( this );
   out = minim.getLineOut( Minim.MONO, 2048 );
-  chik = new ChikInstrument( out );
+  
+  for (int i = 0; i < 20; i++) {
+   val = serial.readStringUntil('\n'); 
+  }
+  
 
 } // end of setup
 
@@ -78,16 +85,20 @@ void draw()
         
         if (history.size() < width) {
          history.add(valC_F); 
+         history2.add(valM_F);
         }
         else {
          history.remove(); 
          history.add(valC_F); 
+         
+         history2.remove();
+         history2.add(valM_F);
         }
         
         //println(valC_F);
 
         //valC_FM = map(valC_F, 0, 30000, 0, 1000);
-        valC_FM = mapClamp(valC_F, 0, 800, 1000, 0);
+        valC_FM = mapClamp(valC_F, 0, 2800, 120, 80);
         valM_FM = mapClamp(valM_F, 0, 1024, 0, 1000);
 
         cf.update(valC_F);
@@ -96,10 +107,15 @@ void draw()
           triggered = true;
           lastPeak = peak;
           //out.playNote( 0.f, 0.05f, chik );
-          out.playNote( 0.f, 1.0f, new WaveShaperInstrument( Frequency.ofPitch("C2").asHz(), 10.0, out ) ); 
+          out.playNote( 0.f, 0.5f, new WaveShaperInstrument( Frequency.ofPitch("C3").asHz(), 10.0, out ) ); 
+          //chik.noteOn(0.1);
         }
-        if (cf.getRelease() > 0) triggered = false;
+        if (cf.getRelease() > 0) {
+          triggered = false;
+          //chik.noteOff();
+        }
         if (triggered) variance = cf.getVariance();
+        
         
       }
     }
@@ -108,7 +124,8 @@ void draw()
   stroke(100);
   if (triggered) {
     background(30,150,150);
-    text("Variance = " + str(variance), 500, 400, 10);
+    //background(10, 10, 50);
+    //text("Variance = " + str(variance), 500, 400, 10);
     
   }
   else {
@@ -124,12 +141,23 @@ void draw()
   int n = 0;
   float last = 0;
   for (Object o : history) {
-    float value = (Float)o * 0.25;
-    line(n, last, 0, n+1, value, 0);
+    float value = (Float)o * 0.2;
+    line(n, height - last, 0, n+1, height - value, 0);
+    last = value;
+    n++;
+  }
+  
+  stroke(255,255,0);
+  n = 0;
+  last = 0;
+  for (Object o : history2) {
+    float value = (Float)o * 0.2;
+    line(n, height - last, 0, n+1, height - value, 0);
     last = value;
     n++;
   }
 
 }  // end of draw
+
 
 //==============================

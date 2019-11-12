@@ -76,7 +76,7 @@ class WaveShaperInstrument implements Instrument
     // effects, and one does this by setting the fourth argument to true.
     //shaper = new WaveShaper( amplitude, 5, Waves.SAW, true );
     
-    shaperAmountLine = new Line(5.f, 1.f, 25.f);
+    shaperAmountLine = new Line(0.3f, 1.f, 25.f);
     reciprocal = new Reciprocal();
    
     // patch the line into the mapAmplitude of the WaveShaper
