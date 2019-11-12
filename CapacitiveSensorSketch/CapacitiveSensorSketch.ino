@@ -24,22 +24,38 @@ void setup()
    Serial.begin(9600);
 }
 
+int mic_max = 0;
+int cap_max = 0;
+int interval = 16;
+unsigned long previousMillis = 0;
+
 void loop()                    
 {
+  unsigned long currentMillis = millis();
 
-    long total1 =  cs_4_2.capacitiveSensor(30);
-
-    Serial.print(total1);                  // print sensor output 1
-    
-    Serial.print('\t');
-  
+    long cap =  cs_4_2.capacitiveSensor(30);
     val = analogRead(analogPin);
-    Serial.println(val);
 
-    //val2 = analogRead(pin2);
-    //Serial.println(val2);
-  
-    //long start = millis();
+    if (val > mic_max) mic_max = val;
+    if (cap > cap_max) cap_max = cap;
 
-    delay(16);                             // arbitrary delay to limit data to serial port 
+    if (currentMillis - previousMillis >= interval) {
+      previousMillis = currentMillis;
+      Serial.print(cap_max); 
+      Serial.print('\t');
+      Serial.println(mic_max);
+      mic_max = 0;
+      cap_max = 0;
+      
+    }
+    
+
+//    Serial.print(total1);                  // print sensor output 1
+//    
+//    Serial.print('\t');
+//  
+//    val = analogRead(analogPin);
+//    Serial.println(val);
+//
+//    delay(16);                             // arbitrary delay to limit data to serial port 
 }
